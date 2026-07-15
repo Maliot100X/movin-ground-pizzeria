@@ -157,14 +157,14 @@ Authentische Steinofenpizza & frische Bistro-Klassiker in bester Qualität.<br>
 <div style="max-width:36rem;margin:2rem auto 0">
 <p class="cd fx" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">TTS Voice Previews — hear how the assistant responds</p>
 <div class="fg g3" style="grid-template-columns:repeat(3,1fr);gap:.5rem">
-<button onclick="previewTTS('Pizza Margarita costs nine Euro. That is our most popular classic with mozzarella and fresh basil.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Price Reply</button>
-<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Cart Reply</button>
-<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Category Reply</button>
+<button onclick="previewTTS('Pizza Margarita costs nine Euro. That is our most popular classic with mozzarella and fresh basil.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">💰</span><br>Price Reply</button>
+<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🛒</span><br>Cart Reply</button>
+<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">📂</span><br>Category Reply</button>
 </div>
 <div class="fg g3" style="grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.5rem">
-<button onclick="previewTTS('The Pizza Margarita costs nine Euro. It is our most popular classic with mozzarella and fresh basil.')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Price Reply</button>
-<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Cart Reply</button>
-<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Category Reply</button>
+<button onclick="previewTTS('Welcome to Movin Ground Pizzeria! We serve authentic stone oven pizza. How can I help you today?')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">👋</span><br>Welcome</button>
+<button onclick="previewTTS('I added Pizza Salami to your cart. Your total is ten Euro. Anything else?')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">✅</span><br>Added to Cart</button>
+<button onclick="previewTTS('We are open Monday to Saturday from eleven to twenty two. Sunday from twelve to twenty one.')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🕐</span><br>Opening Hours</button>
 </div>
 </div>
 
@@ -505,11 +505,10 @@ merged.set(recBuffer[i],offset);
 offset+=recBuffer[i].length;
 }
 console.log('Total audio: '+merged.length+' samples');
-
+var sr=audioCtx?audioCtx.sampleRate:44100;
 cleanupMic();
 status.textContent='Sende zu Deepgram...';
-
-var wav=encodeWAV(merged,audioCtx.sampleRate);
+var wav=encodeWAV(merged,sr);
 console.log('WAV size: '+wav.size+' bytes');
 
 var reader=new FileReader();
