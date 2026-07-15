@@ -55,6 +55,7 @@ body{font-family:Arial,Helvetica,sans-serif;background:#0c0a09;color:#fafaf9;ove
 </style>
 </head>
 <body>
+<audio id="mix-voice" preload="auto" style="display:none"></audio>
 
 <!-- NAV -->
 <nav class="pof t0 l0 r0 z50 nav-blur" style="background:rgba(12,10,9,.85);border-bottom:1px solid rgba(255,255,255,.05)">
@@ -418,29 +419,20 @@ console.log('Audio unlocked');
 }
 
 function playTTSAudio(arrayBuffer){
-var status=document.getElementById('voice-status');
+var st=document.getElementById('voice-status');
+var el=document.getElementById('mix-voice');
 if(!arrayBuffer||arrayBuffer.byteLength<100){
-if(status)status.textContent='Keine Audio-Antwort erhalten.';
+if(st)st.textContent='No audio received.';
 return;
 }
-console.log('playTTSAudio: '+arrayBuffer.byteLength+' bytes');
+if(st)st.textContent='Playing...';
 var blob=new Blob([arrayBuffer],{type:'audio/mpeg'});
 var url=URL.createObjectURL(blob);
-var audio=new Audio(url);
-if(status)status.textContent='Spricht...';
-audio.onended=function(){if(status)status.textContent='Tippen Sie zum Starten';URL.revokeObjectURL(url);};
-audio.onerror=function(e){console.error('Audio error:',e);if(status)status.textContent='Audio Fehler.';URL.revokeObjectURL(url);};
-audio.play().then(function(){console.log('Audio playing');}).catch(function(e){
-console.error('Play failed:',e);
-try{
-var ctx=getTTSContext();
-ctx.resume();
-ctx.decodeAudioData(arrayBuffer.slice(0),function(buffer){
-var src=ctx.createBufferSource();src.buffer=buffer;src.connect(ctx.destination);
-src.onended=function(){if(status)status.textContent='Tippen Sie zum Starten';};
-src.start(0);console.log('WebAudio playing');
-},function(err){if(status)status.textContent='Audio Fehler.';});
-}catch(ex){if(status)status.textContent='Audio Fehler.';}
+el.src=url;
+el.onended=function(){if(st)st.textContent='Tap to start';};
+el.play().catch(function(e){
+console.error('Play error:',e);
+if(st)st.textContent='Tap speaker icon to hear response';
 });
 }
 
