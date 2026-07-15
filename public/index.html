@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>Movin Ground – Steinofenpizza</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -709,19 +712,21 @@ speakNow(text);
 function speakNow(text){
 var status=document.getElementById('voice-status');
 status.textContent='Speaking...';
+console.log('speakNow: '+text.substring(0,40));
 var xhr=new XMLHttpRequest();
 xhr.open('POST','/api/tts',true);
 xhr.setRequestHeader('Content-Type','application/json');
 xhr.timeout=30000;
 xhr.responseType='arraybuffer';
 xhr.onload=function(){
+console.log('TTS response: status='+xhr.status+' bytes='+(xhr.response?xhr.response.byteLength:0));
 if(xhr.status===200&&xhr.response&&xhr.response.byteLength>100){
 playTTSAudio(xhr.response);
 }else{
-status.textContent='Voice error. Try again.';
+status.textContent='Voice error. Status:'+xhr.status+' Size:'+(xhr.response?xhr.response.byteLength:0);
 }
 };
-xhr.onerror=function(){status.textContent='Network error.';};
+xhr.onerror=function(e){console.error('TTS network error',e);status.textContent='Network error.';};
 xhr.ontimeout=function(){status.textContent='Timeout.';};
 xhr.send(JSON.stringify({text:text}));
 }
