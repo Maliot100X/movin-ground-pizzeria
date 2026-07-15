@@ -1,33 +1,37 @@
 const https = require('https');
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    return res.status(204).end();
+  }
 
-  if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'POST') return res.status(405).json({error:'Method not allowed'});
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   const DG_KEY = process.env.DEEPGRAM_API_KEY || 'ffbf23cb49159c3d5699587c20f1debecb819fc5';
 
   try {
-    const {text, lang} = req.body;
-    if (!text) return res.status(400).json({error:'No text'});
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    const data = JSON.parse(body);
+    const text = data.text || '';
 
-    const language = lang || 'de';
-    const model = 'aura-asteria-en';
-    const path = '/v1/speak?model=' + model + '&language=' + language;
+    if (!text) return res.status(400).json({ error: 'No text' });
 
-    console.log('[TTS] "' + text.substring(0, 50) + '" lang=' + language);
+    console.log('[TTS] "' + text.substring(0, 60) + '"');
 
     const audio = await new Promise((resolve, reject) => {
+      const payload = JSON.stringify({ text: text });
       const r = https.request({
         hostname: 'api.deepgram.com',
-        path: path,
+        path: '/v1/speak?model=aura-asteria-en',
         method: 'POST',
         headers: {
           'Authorization': 'Token ' + DG_KEY,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
         }
       }, resp => {
         const chunks = [];
@@ -35,16 +39,17 @@ module.exports = async function handler(req, res) {
         resp.on('end', () => resolve(Buffer.concat(chunks)));
       });
       r.on('error', reject);
-      r.write(JSON.stringify({text}));
+      r.write(payload);
       r.end();
     });
 
     console.log('[TTS] Got ' + audio.length + ' bytes');
     res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.end(audio);
-  } catch(e) {
+  } catch (e) {
     console.error('[TTS] Error:', e.message);
-    res.status(500).json({error: e.message});
+    res.status(500).json({ error: e.message });
   }
 };

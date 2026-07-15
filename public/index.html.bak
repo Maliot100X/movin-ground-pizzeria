@@ -402,19 +402,8 @@ function getTTSContext(){
 if(!ttsAudioCtx||ttsAudioCtx.state==='closed'){
 ttsAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
 }
-if(ttsAudioCtx.state==='suspended'){
-try{ttsAudioCtx.resume();}catch(e){}
-}
+try{if(ttsAudioCtx.state==='suspended')ttsAudioCtx.resume();}catch(e){}
 return ttsAudioCtx;
-}
-
-function unlockAudio(){
-var ctx=getTTSContext();
-if(ctx.state==='running')return;
-var buf=ctx.createBuffer(1,1,22050);
-var src=ctx.createBufferSource();
-src.buffer=buf;src.connect(ctx.destination);src.start(0);
-console.log('Audio unlocked');
 }
 
 function playTTSAudio(arrayBuffer){
@@ -444,6 +433,17 @@ src.start(0);console.log('WebAudio playing');
 });
 }
 
+function fallbackPlay(arrayBuffer){
+console.log('Fallback: using Audio element');
+var blob=new Blob([arrayBuffer],{type:'audio/mpeg'});
+var url=URL.createObjectURL(blob);
+var audio=new Audio(url);
+var st=document.getElementById('voice-status');
+if(st)st.textContent='Spricht...';
+audio.onended=function(){
+if(st)st.textContent='Tippen Sie zum Starten';
+URL.revokeObjectURL(url);
+};
 audio.onerror=function(e){
 console.error('Audio error:',e);
 if(st)st.textContent='Audio Fehler.';
@@ -718,13 +718,13 @@ speakWithTTS(spoken,'de');
 function testTTS(){
 var st=document.getElementById('voice-status');
 st.textContent='Teste TTS...';
-unlockAudio();
+getTTSContext();
 speakWithTTS('Hallo! Willkommen bei Pizzeria Movin Ground. Wie kann ich Ihnen helfen?','de');
 }
 function previewTTS(text,lang){
 var st=document.getElementById('voice-status');
 st.textContent='Vorschau wird abgespielt...';
-unlockAudio();
+getTTSContext();
 speakWithTTS(text,lang||'de');
 }
 function speakWithTTS(text,lang){
