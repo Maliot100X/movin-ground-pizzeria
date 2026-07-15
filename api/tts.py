@@ -1,54 +1,49 @@
-"""Deepgram TTS - Vercel Serverless Function"""
-from http.server import BaseHTTPRequestHandler
+"""Deepgram TTS - Vercel Python Function"""
 import json
+import base64
 import urllib.request
 import os
 
 DG_KEY = os.environ.get('DEEPGRAM_API_KEY', 'ffbf23cb49159c3d5699587c20f1debecb819fc5')
 DG_TTS_URL = 'https://api.deepgram.com/v1/speak'
 
-class handler(BaseHTTPRequestHandler):
-    def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+def handler(request):
+    if request.method == 'OPTIONS':
+        return {'statusCode': 204, 'headers': {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type'
+        }}
 
-    def do_POST(self):
-        try:
-            length = int(self.headers.get('Content-Length', 0))
-            body = json.loads(self.rfile.read(length))
-            text = body.get('text', '')
-            if not text:
-                self._json(400, {'error': 'No text provided'})
-                return
-            print(f'[TTS] Synthesizing: "{text}"')
-            payload = json.dumps({'text': text}).encode()
-            req = urllib.request.Request(DG_TTS_URL, data=payload,
-                headers={'Authorization': 'Token ' + DG_KEY, 'Content-Type': 'application/json'})
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                audio = resp.read()
-                ct = resp.headers.get('Content-Type', 'audio/mpeg')
-            print(f'[TTS] Got {len(audio)} bytes')
-            self.send_response(200)
-            self.send_header('Content-Type', ct)
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Content-Length', str(len(audio)))
-            self.end_headers()
-            self.wfile.write(audio)
-        except Exception as e:
-            print(f'[TTS] Error: {e}')
-            self._json(500, {'error': str(e)})
+    if request.method != 'POST':
+        return {'statusCode': 405, 'headers': {'Content-Type': 'application/json'}, 'body': json.dumps({'error': 'Method not allowed'})}
 
-    def _json(self, code, data):
-        body = json.dumps(data).encode()
-        self.send_response(code)
-        self.send_header('Content-Type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Content-Length', str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+    try:
+        body = request.body
+        if isinstance(body, bytes):
+            body = body.decode()
+        data = json.loads(body)
+        text = data.get('text', '')
+        if not text:
+            return {'statusCode': 400, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': 'No text'})}
 
-    def log_message(self, format, *args):
-        pass
+        payload = json.dumps({'text': text}).encode()
+        req = urllib.request.Request(DG_TTS_URL, data=payload,
+            headers={'Authorization': 'Token ' + DG_KEY, 'Content-Type': 'application/json'})
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            audio = resp.read()
+            ct = resp.headers.get('Content-Type', 'audio/mpeg')
+
+        encoded = base64.b64encode(audio).decode()
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': ct,
+                'Access-Control-Allow-Origin': '*',
+                'Content-Length': str(len(audio))
+            },
+            'isBase64Encoded': True,
+            'body': encoded
+        }
+    except Exception as e:
+        return {'statusCode': 500, 'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'}, 'body': json.dumps({'error': str(e)})}
