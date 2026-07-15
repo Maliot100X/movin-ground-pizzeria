@@ -153,14 +153,14 @@ Authentische Steinofenpizza & frische Bistro-Klassiker in bester Qualität.<br>
 <div style="max-width:36rem;margin:2rem auto 0">
 <p class="cd fx" style="text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem">TTS Voice Previews — hear how the assistant responds</p>
 <div class="fg g3" style="grid-template-columns:repeat(3,1fr);gap:.5rem">
-<button onclick="previewTTS('Pizza Margarita kostet neun Euro. Das ist unser beliebtester Klassiker mit Mozzarella und frischem Basilikum.','de')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇩🇪</span><br>Pizza Margarita Preis</button>
-<button onclick="previewTTS('Pizza Hawaii mit Schinken und Ananas kostet elf Euro. Soll ich sie zum Warenkorb hinzufügen?','de')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇩🇪</span><br>Warenkorb Antwort</button>
-<button onclick="previewTTS('Ich zeige Ihnen unsere Pizzas. Wir haben dreizehn verschiedene Steinofenpizza auf der Karte.','de')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇩🇪</span><br>Kategorie Antwort</button>
+<button onclick="previewTTS('Pizza Margarita costs nine Euro. That is our most popular classic with mozzarella and fresh basil.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Price Reply</button>
+<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Cart Reply</button>
+<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.')" style="padding:.6rem;border-radius:.75rem;background:rgba(238,122,17,.1);border:1px solid rgba(238,122,17,.2);color:#f19332;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Category Reply</button>
 </div>
 <div class="fg g3" style="grid-template-columns:repeat(3,1fr);gap:.5rem;margin-top:.5rem">
-<button onclick="previewTTS('The Pizza Margarita costs nine Euro. It is our most popular classic with mozzarella and fresh basil.','en')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇬🇧</span><br>Pizza Margarita Price</button>
-<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?','en')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇬🇧</span><br>Add to Cart Reply</button>
-<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.','en')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🇬🇧</span><br>Category Reply</button>
+<button onclick="previewTTS('The Pizza Margarita costs nine Euro. It is our most popular classic with mozzarella and fresh basil.')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Price Reply</button>
+<button onclick="previewTTS('Pizza Hawaii with ham and pineapple costs eleven Euro. Shall I add it to your cart?')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Cart Reply</button>
+<button onclick="previewTTS('Here are our pizzas. We have thirteen different stone oven pizzas on the menu.')" style="padding:.6rem;border-radius:.75rem;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa;cursor:pointer;font-size:.7rem;text-align:left;line-height:1.4"><span style="font-size:1rem">🔊</span><br>Category Reply</button>
 </div>
 </div>
 
@@ -444,19 +444,6 @@ src.start(0);console.log('WebAudio playing');
 });
 }
 
-audio.onerror=function(e){
-console.error('Audio error:',e);
-if(st)st.textContent='Audio Fehler.';
-URL.revokeObjectURL(url);
-};
-audio.play().then(function(){
-console.log('Fallback audio playing');
-}).catch(function(e){
-console.error('Fallback play error:',e);
-if(st)st.textContent='Tippen Sie zum Starten';
-});
-}
-
 function toggleVoice(){
 var btn=document.getElementById('voice-btn');
 var status=document.getElementById('voice-status');
@@ -711,46 +698,40 @@ break;
 }
 // Speak via Deepgram TTS
 if(spoken){
-speakWithTTS(spoken,'de');
+speakNow(spoken);
 }
 }
 
 function testTTS(){
 var st=document.getElementById('voice-status');
-st.textContent='Teste TTS...';
+st.textContent='Loading voice...';
 unlockAudio();
-speakWithTTS('Hallo! Willkommen bei Pizzeria Movin Ground. Wie kann ich Ihnen helfen?','de');
+speakNow('Hello! Welcome to Movin Ground Pizzeria. How can I help you?');
 }
 function previewTTS(text,lang){
 var st=document.getElementById('voice-status');
-st.textContent='Vorschau wird abgespielt...';
+st.textContent='Loading voice...';
 unlockAudio();
-speakWithTTS(text,lang||'de');
+speakNow(text);
 }
-function speakWithTTS(text,lang){
+function speakNow(text){
 var status=document.getElementById('voice-status');
-status.textContent='Sprache wird generiert...';
+status.textContent='Speaking...';
 var xhr=new XMLHttpRequest();
 xhr.open('POST','/api/tts',true);
 xhr.setRequestHeader('Content-Type','application/json');
 xhr.timeout=30000;
 xhr.responseType='arraybuffer';
 xhr.onload=function(){
-if(xhr.status===200){
-console.log('TTS got '+xhr.byteLength+' bytes');
+if(xhr.status===200&&xhr.byteLength>100){
 playTTSAudio(xhr.response);
 }else{
-console.error('TTS error:',xhr.status);
-status.textContent='TTS Fehler. Versuchen Sie es nochmal.';
+status.textContent='Voice error. Try again.';
 }
 };
-xhr.onerror=function(){
-status.textContent='Netzwerkfehler beim TTS.';
-};
-xhr.ontimeout=function(){
-status.textContent='TTS Timeout.';
-};
-xhr.send(JSON.stringify({text:text,lang:lang||'de'}));
+xhr.onerror=function(){status.textContent='Network error.';};
+xhr.ontimeout=function(){status.textContent='Timeout.';};
+xhr.send(JSON.stringify({text:text}));
 }
 
 function findItem(text){
