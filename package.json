@@ -1,0 +1,6 @@
+{
+  "name": "movin-ground-pizzeria",
+  "version": "1.0.0",
+  "description": "Pizzeria & Bistro Movin Ground - Voice Assistant with Deepgram STT/TTS",
+  "private": true
+}
