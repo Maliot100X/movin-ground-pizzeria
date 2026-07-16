@@ -446,121 +446,53 @@ var tbox=document.getElementById('transcript-box');
 var ttxt=document.getElementById('transcript-text');
 var wave=document.getElementById('wave-box');
 var mic=document.getElementById('mic-icon');
-console.log('Voice clicked, active='+voiceActive);
-
-if(voiceActive){
-voiceActive=false;cleanupMic();
-btn.style.boxShadow='0 25px 50px -12px rgba(238,122,17,.3)';
-wave.style.display='none';mic.style.display='block';
-status.textContent='Tippen Sie zum Starten';
-tbox.style.display='none';return;
-}
-
-if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-status.textContent='Mikrofon nicht unterstützt. Bitte Chrome verwenden.';return;
-}
-
-// Create TTS AudioContext during user gesture (unlocks autoplay)
-getTTSContext();
-
-navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,sampleRate:16000}})
-.then(function(stream){
-console.log('Mic access granted');
-mediaStream=stream;
-voiceActive=true;
-collectedAudio=[];
+if(voiceActive){voiceActive=false;cleanupMic();btn.style.boxShadow='';wave.style.display='none';mic.style.display='block';status.textContent='Tap to start';tbox.style.display='none';return;}
+if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){status.textContent='Microphone not supported.';return;}
+unlockAudio();
+navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+voiceActive=true;mediaStream=stream;
 btn.style.boxShadow='0 25px 50px -12px rgba(238,122,17,.5)';
-wave.style.display='flex';mic.style.display='none';
-tbox.style.display='block';
-status.textContent='Sprechen Sie jetzt... (3 Sekunden)';
-
-audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-if(audioCtx.state==='suspended')audioCtx.resume();
-
-var source=audioCtx.createMediaStreamSource(stream);
-scriptNode=audioCtx.createScriptProcessor(4096,1,1);
-source.connect(scriptNode);
-var silentGain=audioCtx.createGain();silentGain.gain.value=0;
-scriptNode.connect(silentGain);silentGain.connect(audioCtx.destination);
-
-var recLength=0;
-var recBuffer=[];
-
-scriptNode.onaudioprocess=function(e){
-if(!voiceActive)return;
-var input=e.inputBuffer.getChannelData(0);
-recBuffer.push(new Float32Array(input));
-recLength+=input.length;
-console.log('Audio chunk: '+input.length+' samples, total: '+recLength);
-};
-
-setTimeout(function(){
-if(!voiceActive)return;
+wave.style.display='flex';mic.style.display='none';tbox.style.display='block';
+status.textContent='Listening... (3 seconds)';
+var recorder=new MediaRecorder(stream,{mimeType:'audio/webm'});
+var chunks=[];
+recorder.ondataavailable=function(e){if(e.data.size>0)chunks.push(e.data);};
+recorder.onstop=function(){
 voiceActive=false;
-
-var merged=new Float32Array(recLength);
-var offset=0;
-for(var i=0;i<recBuffer.length;i++){
-merged.set(recBuffer[i],offset);
-offset+=recBuffer[i].length;
-}
-console.log('Total audio: '+merged.length+' samples');
-var sr=audioCtx?audioCtx.sampleRate:44100;
-cleanupMic();
-status.textContent='Sende zu Deepgram...';
-var wav=encodeWAV(merged,sr);
-console.log('WAV size: '+wav.size+' bytes');
-
-var reader=new FileReader();
-reader.onload=function(){
+var blob=new Blob(chunks,{type:'audio/webm'});
+console.log('Recorded: '+blob.size+' bytes');
+if(blob.size<100){status.textContent='No audio captured. Try again.';cleanupMic();btn.style.boxShadow='';wave.style.display='none';mic.style.display='block';tbox.style.display='none';return;}
+status.textContent='Sending to speech recognition...';
 var xhr=new XMLHttpRequest();
 xhr.open('POST','/api/transcribe',true);
-xhr.setRequestHeader('Content-Type','audio/wav');
+xhr.setRequestHeader('Content-Type','audio/webm');
 xhr.timeout=15000;
 xhr.onload=function(){
-console.log('Deepgram response: '+xhr.status);
+console.log('STT response: '+xhr.status+' '+xhr.responseText.substring(0,100));
 if(xhr.status===200){
 var data=JSON.parse(xhr.responseText);
 var t=data.transcript||'';
 if(t){
-status.textContent='Erkannt: '+t;
+status.textContent='Heard: '+t;
 ttxt.textContent=t;
 var cmd=parseCmd(t);
 handleCmd(cmd);
 }else{
-status.textContent='Nichts erkannt. Versuchen Sie es nochmal.';
+status.textContent='Nothing recognized. Try again.';
 ttxt.textContent='';
 }
-setTimeout(function(){
-status.textContent='Tippen Sie zum Starten';
-ttxt.textContent='';tbox.style.display='none';
-wave.style.display='none';mic.style.display='block';
-},5000);
+setTimeout(function(){status.textContent='Tap to start';ttxt.textContent='';tbox.style.display='none';wave.style.display='none';mic.style.display='block';},5000);
 }else{
-status.textContent='Deepgram Fehler: HTTP '+xhr.status;
-console.error('Deepgram error: '+xhr.responseText);
+status.textContent='Speech error: HTTP '+xhr.status;
 }
 };
-xhr.onerror=function(e){
-status.textContent='Netzwerkfehler. Versuchen Sie es nochmal.';
-console.error('XHR error:',e);
+xhr.onerror=function(){status.textContent='Network error.';};
+xhr.ontimeout=function(){status.textContent='Timeout.';};
+xhr.send(blob);
 };
-xhr.ontimeout=function(){
-status.textContent='Timeout. Versuchen Sie es nochmal.';
-};
-xhr.send(reader.result);
-};
-reader.readAsArrayBuffer(wav);
-
-},3000);
-})
-.catch(function(err){
-console.error('Mic error:',err);
-status.textContent='Mikrofon Fehler: '+err.message;
-voiceActive=false;
-btn.style.boxShadow='0 25px 50px -12px rgba(238,122,17,.3)';
-wave.style.display='none';mic.style.display='block';
-});
+recorder.start();
+setTimeout(function(){if(recorder.state==='recording')recorder.stop();},3000);
+}).catch(function(err){status.textContent='Mic error: '+err.message;voiceActive=false;btn.style.boxShadow='';wave.style.display='none';mic.style.display='block';});
 }
 
 function cleanupMic(){
